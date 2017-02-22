@@ -23,14 +23,14 @@ if [ "$1" = "install" ]; then
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/asleap_2.2-1_ar71xx.ipk -P /tmp/ManaToolkit
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-1_ar71xx.ipk -P /tmp/ManaToolkit
     opkg update
-    opkg install /tmp/ManaToolkit/*.ipk
-    #opkg install hostapd-mana
+    opkg install /tmp/ManaToolkit/*.ipk --force-overwrite
+    #opkg install hostapd-mana asleap --force-overwrite
   elif [ "$2" = "sd" ]; then
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/asleap_2.2-1_ar71xx.ipk -P /tmp/ManaToolkit
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-1_ar71xx.ipk -P /tmp/ManaToolkit
     opkg update
-    opkg install /tmp/ManaToolkit/*.ipk --dest sd
-    #opkg install hostapd-mana --dest sd
+    opkg install /tmp/ManaToolkit/*.ipk --dest sd --force-overwrite
+    #opkg install hostapd-mana asleap --dest sd --force-overwrite
   fi
 
   touch /etc/config/ManaToolkit
