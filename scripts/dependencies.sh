@@ -48,3 +48,9 @@ fi
 
 rm /tmp/ManaToolkit.progress
 rm -rf /tmp/ManaToolkit
+
+ if [[ -e /sd/etc/mana-toolkit && ! -e /etc/mana-toolkit ]]; then
+        # sym-link, only for the pineapple nano.
+        ln -s /sd/etc/mana-toolkit /etc/mana-toolkit
+fi
+
