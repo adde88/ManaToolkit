@@ -39,7 +39,11 @@ if [ "$1" = "install" ]; then
   echo "config ManaToolkit 'autostart'" >> /etc/config/ManaToolkit
 
   uci set ManaToolkit.module.installed=1
-  uci commit ManaToolkit.module.installed
+  uci set ManaToolkit.autostart.interface=wlan1
+  uci set ManaToolkit.autostart.upstream=br-lan
+  uci set ManaToolkit.run.upstream=br-lan
+  uci set ManaToolkit.run.upstream=wlan1
+  uci commit ManaToolkit
 
 elif [ "$1" = "remove" ]; then
     opkg remove hostapd-mana asleap
