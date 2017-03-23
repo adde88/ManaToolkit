@@ -289,10 +289,10 @@ class ManaToolkit extends Module
 			for($i=0;$i<count($log_list);$i++)
 			{
 				$info = explode("_", basename($log_list[$i]));
-				$entryDate = gmdate('Y-m-d H-i-s', $info[1]);
+				//$entryDate = gmdate('Y-m-d H-i-s', $info[1]);
 				$entryName = basename($log_list[$i]);
 
-				echo json_encode(array($entryDate, $entryName));
+				echo json_encode(array($entryName));
 
 				if($i!=count($log_list)-1) echo ',';
 			}
