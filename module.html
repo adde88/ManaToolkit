@@ -208,7 +208,6 @@
                           </div>
                         </th>
                         <th>Name</th>
-                        <th>Module</th>
                         <th>Size</th>
                         <th>Date</th>
                         <th>Action</th>
@@ -218,7 +217,6 @@
                     <tr ng-repeat="(fileName, file) in files">
                         <td><input type="checkbox" ng-checked="selectedAll" ng-change="updateSelectedFiles()" ng-model="selectedFiles[file['path']]">
                         <td>{{ file['file'] }}</td>
-                        <td>{{ file['title'] }}</td>
                         <td>{{ file['size'] }}</td>
                         <td>{{ file['date'] }}</td>
                         <td>
