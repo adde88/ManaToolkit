@@ -28,15 +28,6 @@ class ManaToolkit extends Module
             case 'refreshHistory':
                 $this->refreshHistory();
                 break;
-            case 'viewHistory':
-                $this->viewHistory();
-                break;
-            case 'deleteHistory':
-                $this->deleteHistory();
-                break;
-			case 'downloadHistory':
-					$this->downloadHistory();
-				break;
 			case 'toggleManaToolkitOnBoot':
 				$this->toggleManaToolkitOnBoot();
 				break;
@@ -78,6 +69,24 @@ class ManaToolkit extends Module
 				break;
 			case 'deauthenticateMac':
 				$this->deauthenticateMac();
+				break;
+			case 'refreshFilesList':
+				$this->refreshFilesList();
+				break;
+			case 'downloadFilesList':
+				$this->downloadFilesList();
+				break;
+			case 'deleteFilesList':
+				$this->deleteFilesList();
+				break;
+			case 'viewModuleFile':
+				$this->viewModuleFile();
+				break;
+			case 'deleteModuleFile':
+				$this->deleteModuleFile();
+				break;
+			case 'downloadModuleFile':
+				$this->downloadModuleFile();
 				break;
         }
     }
@@ -289,7 +298,7 @@ class ManaToolkit extends Module
 			for($i=0;$i<count($log_list);$i++)
 			{
 				$info = explode("_", basename($log_list[$i]));
-				//$entryDate = gmdate('Y-m-d H-i-s', $info[1]);
+				//$entryDate = gmdate('M-d-Y H-i-s', $info[1]);
 				$entryName = basename($log_list[$i]);
 
 				echo json_encode(array($entryName));
@@ -298,27 +307,6 @@ class ManaToolkit extends Module
 			}
 			echo ']';
 		};
-	}
-
-	private function viewHistory()
-	{
-		$log_date = gmdate("F d Y H:i:s", filemtime("/pineapple/modules/ManaToolkit/log/".$this->request->file));
-		exec ("cat /pineapple/modules/ManaToolkit/log/".$this->request->file, $output);
-
-		if(!empty($output))
-			$this->response = array("output" => implode("\n", $output), "date" => $log_date);
-		else
-			$this->response = array("output" => "Empty log...", "date" => $log_date);
-	}
-
-	private function deleteHistory()
-	{
-		exec("rm -rf /pineapple/modules/ManaToolkit/log/".$this->request->file);
-	}
-
-	private function downloadHistory()
-	{
-		$this->response = array("download" => $this->downloadFile("/pineapple/modules/ManaToolkit/log/".$this->request->file));
 	}
 
 	private function saveAutostartSettings()
@@ -358,10 +346,8 @@ class ManaToolkit extends Module
 	}
 
 	private function getConnectedClients() {
-		exec("iw dev wlan0 station dump | grep Station | awk '{print $2}'", $wlan0clients);
-		exec("iw dev wlan0-1 station dump | grep Station | awk '{print $2}'", $wlan01clients);
 		exec("iw dev wlan1 station dump | grep Station | awk '{print $2}'", $wlan1clients);
-		$this->response = array('wlan0clients' => $wlan0clients, 'wlan01clients' => $wlan01clients, 'wlan1clients' => $wlan1clients);
+		$this->response = array('wlan1clients' => $wlan1clients);
 	}
 
 	private function removeMacAddress() {
@@ -376,12 +362,84 @@ class ManaToolkit extends Module
 	}
 
 	private function disassociateMac() {
-		exec('hostapd-mana_cli -p /var/run/hostapd-mana disassociate "'.$this->request->macAddress.'"', $disassociateResponse);
+		exec('mana_cli -p /var/run/hostapd-mana disassociate "'.$this->request->macAddress.'"', $disassociateResponse);
 		$this->response = array('disassociateResponse' => $disassociateResponse);
 	}
 
 	private function deauthenticateMac() {
-		exec('hostapd-mana_cli -p /var/run/hostapd-mana deauthenticate "'.$this->request->macAddress.'"', $deauthenticateResponse);
+		exec('mana_cli -p /var/run/hostapd-mana deauthenticate "'.$this->request->macAddress.'"', $deauthenticateResponse);
 		$this->response = array('deauthSuccess' => 'Successful', 'deauthenticateResponse' => $deauthenticateResponse);
 	}
+
+		private function dataSize($path)
+		{
+		    $blah = exec( "/usr/bin/du -sch $path | tail -1 | awk {'print $1'}" );
+		    return $blah;
+		}
+
+		private function downloadFilesList()
+		{
+			$files = $this->request->files;
+
+			exec("mkdir /tmp/dl/");
+			foreach($files as $file)
+			{
+				exec("cp ".$file." /tmp/dl/");
+			}
+			exec("cd /tmp/dl/ && tar -czf /tmp/files.tar.gz *");
+			exec("rm -rf /tmp/dl/");
+
+			$this->response = array("download" => $this->downloadFile("/tmp/files.tar.gz"));
+		}
+
+		private function deleteFilesList()
+		{
+			$files = $this->request->files;
+
+			foreach($files as $file)
+			{
+				exec("rm -rf ".$file);
+			}
+		}
+
+		private function refreshFilesList()
+		{
+			$modules = array();
+			foreach(glob('/pineapple/modules/ManaToolkit/log/*') as $file)
+			{
+				$module = array();
+				$module['file'] = basename($file);
+				$module['path'] = $file;
+				$module['size'] = $this->dataSize($file);
+				$module['title'] = explode("/", dirname($file))[3];
+				$module['date'] = gmdate("F d Y H:i:s", filemtime($file));
+				$module['timestamp'] = filemtime($file);
+				$modules[] = $module;
+			}
+
+			usort($modules, create_function('$a, $b','if($a["timestamp"] == $b["timestamp"]) return 0; return ($a["timestamp"] > $b["timestamp"]) ? -1 : 1;'));
+
+			$this->response = array("files" => $modules);
+		}
+
+		private function viewModuleFile()
+		{
+			$log_date = gmdate("F d Y H:i:s", filemtime($this->request->file));
+			exec ("strings ".$this->request->file, $output);
+
+			if(!empty($output))
+				$this->response = array("output" => implode("\n", $output), "date" => $log_date, "name" => basename($this->request->file));
+			else
+				$this->response = array("output" => "Empty file...", "date" => $log_date, "name" => basename($this->request->file));
+		}
+
+		private function deleteModuleFile()
+		{
+			exec("rm -rf ".$this->request->file);
+		}
+
+		private function downloadModuleFile()
+		{
+			$this->response = array("download" => $this->downloadFile($this->request->file));
+		}
 }

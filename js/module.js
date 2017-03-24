@@ -221,60 +221,102 @@ registerController('ManaToolkit_OutputController', ['$api', '$scope', '$rootScop
 
 }]);
 
-registerController('ManaToolkit_HistoryController', ['$api', '$scope', '$rootScope', function($api, $scope, $rootScope) {
-	$scope.history = [];
-	$scope.historyOutput = 'Loading...';
-	$scope.historyDate = 'Loading...';
+registerController('ManaToolkit_LogController', ['$api', '$scope', '$rootScope', '$filter', function($api, $scope, $rootScope, $filter) {
+	$scope.files = [];
+	$scope.selectedFiles = {};
+	$scope.selectedFilesArray = [];
+	$scope.selectedAll = false;
+	$scope.fileOutput = 'Loading...';
+	$scope.fileDate = 'Loading...';
+	$scope.fileName = 'Loading...';
 
-  $scope.refreshHistory = (function() {
-      $api.request({
-          module: "ManaToolkit",
-          action: "refreshHistory"
-      }, function(response) {
-              $scope.history = response;
-      })
-  });
+	$scope.updateSelectedFiles = (function() {
+		$scope.selectedFilesArray = [];
+		angular.forEach($scope.selectedFiles, function(key,value) { if(key) { $scope.selectedFilesArray.push(value); } });
+	});
 
-  $scope.viewHistory = (function(param) {
-	$api.request({
-          module: "ManaToolkit",
-          action: "viewHistory",
-		file: param
-      }, function(response) {
-          $scope.historyOutput = response.output;
-		$scope.historyDate = response.date;
-      })
-  });
-
-  $scope.deleteHistory = (function(param) {
-	$api.request({
-          module: "ManaToolkit",
-          action: "deleteHistory",
-		file: param
-      }, function(response) {
-          $scope.refreshHistory();
-      })
-  });
-
-	$scope.downloadHistory = (function(param) {
-				$api.request({
-						module: 'ManaToolkit',
-						action: 'downloadHistory',
-						file: param
-				}, function(response) {
-						if (response.error === undefined) {
-								window.location = '/api/?download=' + response.download;
-						}
-				});
-		});
-
-	$scope.refreshHistory();
-
-	$rootScope.$watch('status.refreshHistory', function(param) {
-		if(param) {
-			$scope.refreshHistory();
+	$scope.updateAllSelectedFiles = (function() {
+		$scope.selectedFilesArray = [];
+		if($scope.selectedAll)
+		{
+			angular.forEach($scope.files, function(key,value) { $scope.selectedFilesArray.push(key.path); $scope.selectedFiles[key.path] = true; });
+			$scope.selectedAll = true;
+		}
+		else
+		{
+			$scope.selectedAll = false;
+			$scope.selectedFiles = {};
 		}
 	});
+
+  $scope.refreshFilesList = (function() {
+      $api.request({
+          module: "ManaToolkit",
+          action: "refreshFilesList"
+      }, function(response) {
+			$scope.files = response.files;
+      })
+  });
+
+	$scope.downloadFilesList = (function() {
+		$api.request({
+        module: "ManaToolkit",
+        action: "downloadFilesList",
+		files: $scope.selectedFilesArray
+    }, function(response) {
+			if (response.error === undefined) {
+				window.location = '/api/?download=' + response.download;
+			}
+    })
+  });
+
+	$scope.deleteFilesList = (function() {
+		$api.request({
+        module: "ManaToolkit",
+        action: "deleteFilesList",
+		files: $scope.selectedFilesArray
+    }, function(response) {
+			$scope.refreshFilesList();
+			$scope.selectedFiles = {};
+			$scope.updateSelectedFiles();
+    })
+  });
+
+  $scope.viewFile = (function(param) {
+	$api.request({
+        module: "ManaToolkit",
+        action: "viewModuleFile",
+		file: param
+      }, function(response) {
+        	$scope.fileOutput = response.output;
+			$scope.fileDate = response.date;
+			$scope.fileName = response.name;
+      })
+  });
+
+  $scope.deleteFile = (function(param) {
+	$api.request({
+        	module: "ManaToolkit",
+        	action: "deleteModuleFile",
+			file: param
+      }, function(response) {
+        	$scope.refreshFilesList();
+      })
+  });
+
+	$scope.downloadFile = (function(param) {
+			$api.request({
+            	module: 'ManaToolkit',
+            	action: 'downloadModuleFile',
+				file: param
+        }, function(response) {
+            if (response.error === undefined) {
+                window.location = '/api/?download=' + response.download;
+            }
+        });
+    });
+
+	$scope.refreshFilesList();
 
 }]);
 
@@ -322,8 +364,6 @@ registerController('ManaToolkit_ConfigController', ['$api', '$scope', '$timeout'
 
 registerController('ManaToolkit_ClientsController', ['$api', '$scope', function($api, $scope) {
 	$scope.clientslength = 0;
-	$scope.wlan0clients = [];
-	$scope.wlan01clients = [];
 	$scope.wlan1clients = [];
 	$scope.dhcplength = 0;
 	$scope.dhcpleases = [];
@@ -336,9 +376,7 @@ registerController('ManaToolkit_ClientsController', ['$api', '$scope', function(
 			module: 'ManaToolkit',
 			action: 'getConnectedClients'
 		}, function(response) {
-			$scope.clientslength = response.wlan0clients.length + response.wlan01clients.length + response.wlan1clients.length;
-			$scope.wlan0clients = response.wlan0clients;
-			$scope.wlan01clients = response.wlan01clients;
+			$scope.clientslength = response.wlan1clients.length;
 			$scope.wlan1clients = response.wlan1clients;
 		});
 	});
