@@ -31,6 +31,7 @@ if [ "$1" = "install" ]; then
     opkg update
     opkg install /tmp/ManaToolkit/*.ipk --dest sd --force-overwrite
     #opkg install hostapd-mana --dest sd
+    ln -s /sd/etc/mana-toolkit /etc/mana-toolkit
   fi
 
   touch /etc/config/ManaToolkit
