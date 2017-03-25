@@ -184,7 +184,7 @@
   </div>
 </div>
 
-<div class="panel panel-default" ng-controller="ManaToolkit_LogController">
+<div class="panel panel-default" ng-show="$root.status.installed" ng-controller="ManaToolkit_LogController">
     <div class="panel-heading">
         <h4 class="panel-title">Logs <span class="badge">{{files.length}}</span></h4>
     </div>
