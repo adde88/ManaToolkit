@@ -109,7 +109,7 @@ class ManaToolkit extends Module
 
     private function handleDependencies()
     {
-		if(!$this->checkDependency("ManaToolkit"))
+		if(!$this->checkDependency("hostapd-mana"))
 		{
 			$this->execBackground("/pineapple/modules/ManaToolkit/scripts/dependencies.sh install ".$this->request->destination);
 	        $this->response = array('success' => true);
@@ -172,7 +172,7 @@ class ManaToolkit extends Module
     {
         if (!file_exists('/tmp/ManaToolkit.progress'))
 		{
-			if (!$this->checkDependency("ManaToolkit"))
+			if (!$this->checkDependency("hostapd-mana"))
 			{
 				$installed = false;
 				$install = "Not installed";
@@ -192,7 +192,7 @@ class ManaToolkit extends Module
 				$installLabel = "success";
 				$processing = false;
 
-				if($this->checkRunning("ManaToolkit"))
+				if($this->checkRunning("hostapd-mana"))
 				{
 					$status = "Stop";
 					$statusLabel = "danger";
@@ -238,9 +238,9 @@ class ManaToolkit extends Module
 
     private function refreshOutput()
     {
-		if ($this->checkDependency("ManaToolkit"))
+		if ($this->checkDependency("hostapd-mana"))
 		{
-			if ($this->checkRunning("ManaToolkit"))
+			if ($this->checkRunning("hostapd-mana"))
 			{
 				$path = "/pineapple/modules/ManaToolkit/log";
 
