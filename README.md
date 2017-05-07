@@ -1,8 +1,8 @@
 # Mana Toolkit - Module for the WiFi Pineapples  
-## Early developer branch
-This is a bleeding-edge ALPHA version of the Mana Toolkit "Module" for the WiFi Pineapples made by me. @adde88  
-It should work, on both Pineapple NANO and TETRA.  But this is the dev. branch, so no promises!    
-I would be very happy if people have suggestions, or just general feedback for improving the Module.   
+## Bleeding-edge developer branch
+This is NOT to be considered a working version of the Mana Toolkit "Module".  
+All my dev. work will go here, before merging with the master-branch.  
+I would be very happy if people could test this, leave suggestions, or just general feedback for improving the Module.   
 
 Installation:
 -----------------
