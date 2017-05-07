@@ -7,15 +7,16 @@ I would be very happy if people have suggestions, or just general feedback for i
 
 Installation:
 -----------------
-TETRA:
+TETRA:  
 Create a folder: /pineapple/modules/ManaToolkit  
 Copy all these files to that folder.  
-
-NANO:
-Create a folder: /sd/modules/ManaToolkit   
+Done.  
+  
+NANO:  
+Create a folder: /sd/modules/ManaToolkit  
 Copy all these files to that folder.  
-You then need to sym-link that folder: ln -s /sd/modules/ManaToolkit /pineapple/modules/ManaToolkit   
-Done.   
+You then need to sym-link that folder: ln -s /sd/modules/ManaToolkit /pineapple/modules/ManaToolkit  
+Done.  
 
 Disclaimer
 -----------------
