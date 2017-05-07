@@ -38,8 +38,7 @@ registerController('ManaToolkit_ControlsController', ['$api', '$scope', '$rootSc
 
 	$rootScope.status = {
 		installed : false,
-		refreshOutput : false,
-		refreshHistory : false
+		refreshOutput : false
 	};
 
   $scope.refreshStatus = (function() {
@@ -72,17 +71,14 @@ registerController('ManaToolkit_ControlsController', ['$api', '$scope', '$rootSc
 		$scope.starting = true;
 
 		$rootScope.status.refreshOutput = false;
-		$rootScope.status.refreshHistory = false;
 
 		$api.request({
             module: 'ManaToolkit',
             action: 'toggleManaToolkit',
-						interface: $scope.selectedInterface
+			interface: $scope.selectedInterface
         }, function(response) {
             $timeout(function(){
-							$rootScope.status.refreshOutput = true;
-							$rootScope.status.refreshHistory = true;
-
+				$rootScope.status.refreshOutput = true;
 	            $scope.starting = false;
 				$scope.refreshStatus();
             }, 2000);
@@ -97,7 +93,7 @@ registerController('ManaToolkit_ControlsController', ['$api', '$scope', '$rootSc
 				}, function(response) {
 					$scope.saveSettingsLabel = "success";
 					$timeout(function(){
-							$scope.saveSettingsLabel = "default";
+						$scope.saveSettingsLabel = "default";
 					}, 2000);
 				})
 		});
@@ -362,97 +358,108 @@ registerController('ManaToolkit_ConfigController', ['$api', '$scope', '$timeout'
     $scope.getConfiguration();
 }]);
 
-registerController('ManaToolkit_ClientsController', ['$api', '$scope', function($api, $scope) {
-	$scope.clientslength = 0;
-	$scope.wlan1clients = [];
-	$scope.dhcplength = 0;
-	$scope.dhcpleases = [];
-	$scope.blacklistlength = 0;
-	$scope.blacklist = [];
+registerController('ManaToolkit_WiFiController', ['$api', '$scope', '$rootScope', '$filter', function($api, $scope, $rootScope, $filter) {
+	$scope.info = {
+		wifiClientsList : []
+	};
+	$scope.title = "Loading...";
+	$scope.output = "Loading...";
+	$scope.loading = false;
 
-	// this function gets the connected clients information and fills in the panel
-	$scope.getConnectedClients = (function() {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'getConnectedClients'
-		}, function(response) {
-			$scope.clientslength = response.wlan1clients.length;
-			$scope.wlan1clients = response.wlan1clients;
-		});
-	});
+	$scope.getInfo = function() {
+			$scope.loading = true;
 
-	// this function adds a mac address to the blacklist
-	$scope.addMacAddress = (function(macAddress) {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'addMacAddress',
-			macAddress: macAddress
-		}, function(response) {
-			$scope.getBlacklist();
-		});
-	});
+			$api.request({
+					module: 'ManaToolkit',
+					action: 'getWiFi'
+			}, function(response) {
+					$scope.info = response.info;
+					$scope.loading = false;
+			});
+	};
 
-	// this function gets the DHCP leases from the file system and fills in the panel
-	$scope.getDHCPLeases = (function() {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'getDHCPLeases'
-		}, function(response) {
-			$scope.dhcplength = response.dhcpleases.length;
-			$dhcp = response.dhcpleases;
-			for (var i = $scope.dhcplength - 1; i >= 0; i--) {
-				$dhcp[i] = $dhcp[i].split(' ');
-			}
-			$scope.dhcpleases = $dhcp;
-		});
-	});
+	$scope.getMACInfo = function(param) {
+			$scope.title = "Loading...";
+			$scope.output = "Loading...";
 
-	// this function removes a MAC address from the blacklist
-	$scope.removeMacAddress = (function(macAddress) {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'removeMacAddress',
-			macAddress: macAddress
-		}, function(response) {
-			$scope.getBlacklist();
-		});
-	});
+			$api.request({
+					module: 'ManaToolkit',
+					action: 'getMACInfo',
+					mac: param
+			}, function(response) {
+					$scope.title = response.title;
+					$scope.output = response.output;
+			});
+	};
 
-	// this function retrieves the blacklist and fills it in on the panel
-	$scope.getBlacklist = (function() {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'getBlacklist'
-		}, function(response) {
-			$scope.blacklistlength = response.blacklist.length;
-			$scope.blacklist = response.blacklist;
-		});
-	});
+	$scope.getPingInfo = function(param) {
+			$scope.title = "Loading...";
+			$scope.output = "Loading...";
 
-	// this function disassociates a MAC address
-	$scope.disassociateMac = (function(macAddress) {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'disassociateMac',
-			macAddress: macAddress
-		}, function(response) {
-			$scope.getConnectedClients();
-		});
-	});
+			$api.request({
+					module: 'ManaToolkit',
+					action: 'getPingInfo',
+					ip: param
+			}, function(response) {
+					$scope.title = response.title;
+					$scope.output = response.output;
+			});
+	};
 
-	// this function deauthenticates a MAC address
-	$scope.deauthenticateMac = (function(macAddress) {
-		$api.request({
-			module: 'ManaToolkit',
-			action: 'deauthenticateMac',
-			macAddress: macAddress
-		}, function(response) {
-			$scope.getConnectedClients();
-		});
-	});
+	$scope.getInfo();
 
-	// initialize the panels
-	$scope.getBlacklist();
-	$scope.getConnectedClients();
-	$scope.getDHCPLeases();
+}]);
+
+registerController('ManaToolkit_DHCPController', ['$api', '$scope', '$rootScope', '$filter', function($api, $scope, $rootScope, $filter) {
+	$scope.info = {
+		clientsList : []
+	};
+
+	$scope.title = "Loading...";
+	$scope.output = "Loading...";
+
+	$scope.loading = false;
+
+	$scope.getInfo = function() {
+			$scope.loading = true;
+
+			$api.request({
+					module: 'ManaToolkit',
+					action: 'getDHCP'
+			}, function(response) {
+					$scope.info = response.info;
+					$scope.loading = false;
+			});
+	};
+
+	$scope.getMACInfo = function(param) {
+			$scope.title = "Loading...";
+			$scope.output = "Loading...";
+
+			$api.request({
+					module: 'ManaToolkit',
+					action: 'getMACInfo',
+					mac: param
+			}, function(response) {
+					$scope.title = response.title;
+					$scope.output = response.output;
+			});
+	};
+
+	$scope.getPingInfo = function(param) {
+			$scope.title = "Loading...";
+			$scope.output = "Loading...";
+
+			$api.request({
+					module: 'ManaToolkit',
+					action: 'getPingInfo',
+					ip: param
+			}, function(response) {
+					$scope.title = response.title;
+					$scope.output = response.output;
+			});
+	};
+
+	$scope.getInfo();
+
 }]);

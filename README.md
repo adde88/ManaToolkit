@@ -1,13 +1,20 @@
 # Mana Toolkit - Module for the WiFi Pineapples  
+# Early developer branch
 ===================================
-This is an early BETA release of the Mana Toolkit "Module" for the WiFi Pineapples made by me. @adde88  
-It does work, on both Pineapple NANO and TETRA.  But i do not feel that it's ready yet to be submitted to the Hak5 repositories.    
-I would be very happy if people have suggestions or general feedback for improving the Module.  
+This is a bleeding-edge ALPHA version of the Mana Toolkit "Module" for the WiFi Pineapples made by me. @adde88  
+It should work, on both Pineapple NANO and TETRA.  But this is the dev. branch, so no promises!    
+I would be very happy if people have suggestions, or just general feedback for improving the Module.   
 
 Installation:
 -----------------
-Create folder: /pineapple/modules/ManaToolkit  
-Copy all files to said folder.  
+TETRA:
+Create a folder: /pineapple/modules/ManaToolkit  
+Copy all these files to that folder.  
+
+NANO:
+Create a folder: /sd/modules/ManaToolkit   
+Copy all these files to that folder.  
+You then need to sym-link that folder: ln -s /sd/modules/ManaToolkit /pineapple/modules/ManaToolkit   
 Done.   
 
 Disclaimer

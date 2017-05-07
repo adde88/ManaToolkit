@@ -11,8 +11,8 @@ export PATH=$PATH:/sd/usr/bin:/sd/usr/sbin
 touch /tmp/ManaToolkit.progress
 mkdir -p /tmp/ManaToolkit
 
-if [ -e /sd ]; then
-	# sym-link, only for the pineapple nano.
+if [ -d /sd ]; then
+	# sym-linking is only needed on the pineapple NANO.
 	rm -r /usr/lib/python2.7
 	mkdir -p /sd/usr/lib/python2.7
 	ln -s /sd/usr/lib/python2.7 /usr/lib/python2.7
@@ -20,20 +20,24 @@ fi
 
 if [ "$1" = "install" ]; then
   if [ "$2" = "internal" ]; then
+    if [ -d /sd ]; then
+      exit 0
+    fi
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/asleap_2.2-1_ar71xx.ipk -P /tmp/ManaToolkit
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-2_ar71xx.ipk -P /tmp/ManaToolkit
     opkg update
-    opkg install /tmp/ManaToolkit/*.ipk --force-overwrite
-    #opkg install hostapd-mana
+    opkg install /tmp/ManaToolkit/*.ipk sslsplit --force-overwrite
+    #opkg install hostapd-mana sslsplit
   elif [ "$2" = "sd" ]; then
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/asleap_2.2-1_ar71xx.ipk -P /tmp/ManaToolkit
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-2_ar71xx.ipk -P /tmp/ManaToolkit
     opkg update
-    opkg install /tmp/ManaToolkit/*.ipk --dest sd --force-overwrite
-    #opkg install hostapd-mana --dest sd
+    opkg install /tmp/ManaToolkit/*.ipk sslsplit --dest sd --force-overwrite
+    #opkg install hostapd-mana sslsplit --dest sd
     ln -s /sd/etc/mana-toolkit /etc/mana-toolkit
   fi
 
+  cp /etc/mana-toolkit/hostapd-mana.conf /etc/mana-toolkit/hostapd-mana.default.conf
   touch /etc/config/ManaToolkit
   echo "config ManaToolkit 'module'" > /etc/config/ManaToolkit
   echo "config ManaToolkit 'run'" >> /etc/config/ManaToolkit

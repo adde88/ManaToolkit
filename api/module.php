@@ -25,9 +25,6 @@ class ManaToolkit extends Module
             case 'handleDependenciesStatus':
                 $this->handleDependenciesStatus();
                 break;
-            case 'refreshHistory':
-                $this->refreshHistory();
-                break;
 			case 'toggleManaToolkitOnBoot':
 				$this->toggleManaToolkitOnBoot();
 				break;
@@ -49,26 +46,17 @@ class ManaToolkit extends Module
 			case 'getVersionInfo':
 				$this->getVersionInfo();
 				break;
-			case 'getDHCPLeases':
-				$this->getDHCPLeases();
+			case 'getWiFi':
+				$this->getWiFi();
 				break;
-			case 'getBlacklist':
-				$this->getBlacklist();
+			case 'getMACInfo':
+				$this->getMACInfo();
 				break;
-			case 'getConnectedClients':
-				$this->getConnectedClients();
+			case 'getPingInfo':
+				$this->getPingInfo();
 				break;
-			case 'removeMacAddress':
-				$this->removeMacAddress();
-				break;
-			case 'addMacAddress':
-				$this->addMacAddress();
-				break;
-			case 'disassociateMac':
-				$this->disassociateMac();
-				break;
-			case 'deauthenticateMac':
-				$this->deauthenticateMac();
+			case 'getDHCP':
+				$this->getDHCP();
 				break;
 			case 'refreshFilesList':
 				$this->refreshFilesList();
@@ -168,6 +156,11 @@ class ManaToolkit extends Module
 		$this->response = array("interfaces" => $interfaceArray, "selected" => $this->uciGet("ManaToolkit.run.interface"));
 	}
 
+	private function check_loud()
+	{
+		
+	}
+	
     private function refreshStatus()
     {
         if (!file_exists('/tmp/ManaToolkit.progress'))
@@ -233,7 +226,17 @@ class ManaToolkit extends Module
 			$device = $this->getDevice();
 			$sdAvailable = $this->isSDAvailable();
 
-		$this->response = array("device" => $device, "sdAvailable" => $sdAvailable, "status" => $status, "statusLabel" => $statusLabel, "installed" => $installed, "install" => $install, "installLabel" => $installLabel, "bootLabelON" => $bootLabelON, "bootLabelOFF" => $bootLabelOFF, "processing" => $processing);
+		$this->response = array(
+			"device" => $device,
+			"sdAvailable" => $sdAvailable,
+			"status" => $status,
+			"statusLabel" => $statusLabel,
+			"installed" => $installed,
+			"install" => $install,
+			"installLabel" => $installLabel,
+			"bootLabelON" => $bootLabelON,
+			"bootLabelOFF" => $bootLabelOFF,
+			"processing" => $processing);
 	}
 
     private function refreshOutput()
@@ -242,40 +245,24 @@ class ManaToolkit extends Module
 		{
 			if ($this->checkRunning("hostapd-mana"))
 			{
-				$path = "/pineapple/modules/ManaToolkit/log";
-
-				$latest_ctime = 0;
-				$latest_filename = '';
-
-				$d = dir($path);
-				while (false !== ($entry = $d->read())) {
-				  $filepath = "{$path}/{$entry}";
-				  if (is_file($filepath) && filectime($filepath) > $latest_ctime) {
-				      $latest_ctime = filectime($filepath);
-				      $latest_filename = $entry;
-				    }
-				}
-
-				if($latest_filename != "")
+				$filename = '/pineapple/modules/ManaToolkit/log/hostapd-mana_output.log';
+				if(file_exists($filename))
 				{
-					$log_date = gmdate("F d Y H:i:s", filemtime("/pineapple/modules/ManaToolkit/log/".$latest_filename));
-
 					if ($this->request->filter != "")
 					{
 						$filter = $this->request->filter;
-
-						$cmd = "cat /pineapple/modules/ManaToolkit/log/".$latest_filename." | ".$filter;
+						$cmd = "cat ".$filename." | ".$filter;
 					}
 					else
 					{
-						$cmd = "cat /pineapple/modules/ManaToolkit/log/".$latest_filename;
+						$cmd = "cat ".$filename;
 					}
 
 					exec ($cmd, $output);
 					if(!empty($output))
 						$this->response = implode("\n", array_reverse($output));
 					else
-						$this->response = "Empty log...";
+						$this->response = "No output to display...";
 				}
 			}
 			else
@@ -289,26 +276,6 @@ class ManaToolkit extends Module
 		}
     }
 
-	private function refreshHistory()
-	{
-		$this->streamFunction = function () {
-			$log_list = array_reverse(glob("/pineapple/modules/ManaToolkit/log/*"));
-
-			echo '[';
-			for($i=0;$i<count($log_list);$i++)
-			{
-				$info = explode("_", basename($log_list[$i]));
-				//$entryDate = gmdate('M-d-Y H-i-s', $info[1]);
-				$entryName = basename($log_list[$i]);
-
-				echo json_encode(array($entryName));
-
-				if($i!=count($log_list)-1) echo ',';
-			}
-			echo ']';
-		};
-	}
-
 	private function saveAutostartSettings()
 	{
 			$settings = $this->request->settings;
@@ -317,8 +284,17 @@ class ManaToolkit extends Module
 
     private function getConfiguration()
     {
-        $config = file_get_contents('/etc/mana-toolkit/hostapd-mana.conf');
-        $this->response = array("ManaToolkitConfiguration" => $config);
+		$manaconf = '/sd/etc/mana-toolkit/hostapd-mana.conf';
+		if(file_exists($manaconf))
+		{
+			$config = file_get_contents('/sd/etc/mana-toolkit/hostapd-mana.conf');
+			$this->response = array("ManaToolkitConfiguration" => $config);
+		}
+		else
+		{
+			$config = file_get_contents('/etc/mana-toolkit/hostapd-mana.conf');
+			$this->response = array("ManaToolkitConfiguration" => $config);
+		}
     }
 
     private function saveConfiguration()
@@ -334,48 +310,73 @@ class ManaToolkit extends Module
         file_put_contents('/etc/mana-toolkit/hostapd-mana.conf', $defaultConfig);
         $this->response = array("success" => true);
     }
+	
+	private function getDHCP()
+	{
 
-	private function getDHCPLeases() {
-		exec("cat /tmp/dhcp-mana.leases", $dhcpleases);
-		$this->response = array('dhcpleases' => $dhcpleases);		
+			$dhcpClients = explode("\n", trim(shell_exec("cat /tmp/dhcp-mana.leases")));
+			$clientsList = array();
+			for($i=0;$i<count($dhcpClients);$i++)
+			{
+				if($dhcpClients[$i] != "")
+				{
+					$dhcp_client = explode(" ", $dhcpClients[$i]);
+					$mac_address = $dhcp_client[1];
+					$ip_address = $dhcp_client[2];
+					$hostname = $dhcp_client[3];
+
+					array_push($clientsList, array("hostname" => $hostname, "mac" => $mac_address, "ip" =>$ip_address));
+				}
+			}
+
+			$info = array(
+						'clientsList' =>  $clientsList
+						);
+
+			$this->response = array('info' => $info);
 	}
-
-	private function getBlacklist() {
-        $blacklist_file = file_get_contents('/etc/mana-toolkit/hostapd.deny');
-        $this->response = array("blacklist" => $blacklist_file);
-	}
-
-	private function getConnectedClients() {
-		exec("iw dev wlan1 station dump | grep Station | awk '{print $2}'", $wlan1clients);
-		$this->response = array('wlan1clients' => $wlan1clients);
-	}
-
-	private function removeMacAddress() {
-		exec("sed '/".$this->request->macAddress."/d' /etc/mana-toolkit/hostapd.deny", $removeMacResponse);
-		$this->response = array('removeMacResponse' => $removeMacResponse);
-	}
-
-	private function addMacAddress() {
-        $blacklist_mac = $this->request->macAddress;
-        file_put_contents('/etc/mana-toolkit/hostapd.deny', $blacklist_mac);
-        $this->response = array("success" => true);
-	}
-
-	private function disassociateMac() {
-		exec('mana_cli -p /var/run/hostapd-mana disassociate "'.$this->request->macAddress.'"', $disassociateResponse);
-		$this->response = array('disassociateResponse' => $disassociateResponse);
-	}
-
-	private function deauthenticateMac() {
-		exec('mana_cli -p /var/run/hostapd-mana deauthenticate "'.$this->request->macAddress.'"', $deauthenticateResponse);
-		$this->response = array('deauthSuccess' => 'Successful', 'deauthenticateResponse' => $deauthenticateResponse);
-	}
-
-		private function dataSize($path)
+	
+	private function getWiFi()
+	{
+		$wifiClients = explode("\n", trim(shell_exec('iw dev wlan1 station dump | grep "Station"')));
+		$wifiClientsList = array();
+		for($i=0;$i<count($wifiClients);$i++)
 		{
-		    $blah = exec( "/usr/bin/du -sch $path | tail -1 | awk {'print $1'}" );
-		    return $blah;
-		}
+			if($wifiClients[$i] != "")
+			{
+				$wifi_client = explode(" ", $wifiClients[$i]);
+				$mac_address = $wifi_client[1];
+				$ip_address = exec("cat /tmp/dhcp-mana.leases | grep \"".$mac_address."\" | awk '{ print $3}'");
+				$hostname = exec("cat /tmp/dhcp-mana.leases | grep \"".$mac_address."\" | awk '{ print $4}'");
+
+				array_push($wifiClientsList, array("hostname" => $hostname, "mac" => $mac_address, "ip" =>$ip_address));
+			}
+	}
+
+		$info = array(
+			'wifiClientsList' =>  $wifiClientsList
+		);
+
+		$this->response = array('info' => $info);
+	}
+		
+	private function getMACInfo()
+	{
+		$content = file_get_contents("http://api.macvendors.com/".$this->request->mac);
+		$this->response = array('title' => $this->request->mac, "output" => $content);
+	}
+		
+	private function getPingInfo()
+	{
+		exec ("ping -c4 ".$this->request->ip, $output);
+		$this->response = array('title' => $this->request->ip, "output" => implode("\n", array_reverse($output)));
+	}
+
+	private function dataSize($path)
+	{
+	    $blah = exec( "/usr/bin/du -sch $path | tail -1 | awk {'print $1'}" );
+	    return $blah;
+	}
 
 		private function downloadFilesList()
 		{
@@ -405,13 +406,42 @@ class ManaToolkit extends Module
 		private function refreshFilesList()
 		{
 			$modules = array();
-			foreach(glob('/pineapple/modules/ManaToolkit/log/*') as $file)
+			foreach(glob('/pineapple/modules/ManaToolkit/log/*.log') as $file)
 			{
 				$module = array();
 				$module['file'] = basename($file);
 				$module['path'] = $file;
 				$module['size'] = $this->dataSize($file);
-				$module['title'] = explode("/", dirname($file))[3];
+				if(basename($file) != 'hostapd-mana_output'){
+					$module['title'] = 'Hostapd - Live Output';
+				}
+				else{
+					$module['title'] = explode("/", dirname($file))[3];
+				}
+				$module['date'] = gmdate("F d Y H:i:s", filemtime($file));
+				$module['timestamp'] = filemtime($file);
+				$modules[] = $module;
+			}
+
+			foreach(glob('/pineapple/modules/ManaToolkit/log/*/*.log') as $file)
+			{
+				$module = array();
+				$module['file'] = basename($file);
+				$module['path'] = $file;
+				$module['size'] = $this->dataSize($file);
+				$module['title'] = explode("/", dirname($file))[5];
+				$module['date'] = gmdate("F d Y H:i:s", filemtime($file));
+				$module['timestamp'] = filemtime($file);
+				$modules[] = $module;
+			}
+
+			foreach(glob('/pineapple/modules/ManaToolkit/log/*/*/*.log') as $file)
+			{
+				$module = array();
+				$module['file'] = basename($file);
+				$module['path'] = $file;
+				$module['size'] = $this->dataSize($file);
+				$module['title'] = explode("/", dirname($file))[5];
 				$module['date'] = gmdate("F d Y H:i:s", filemtime($file));
 				$module['timestamp'] = filemtime($file);
 				$modules[] = $module;
