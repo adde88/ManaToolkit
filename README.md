@@ -6,8 +6,14 @@ I would be very happy if people have suggestions or general feedback for improvi
 
 Installation:
 -----------------
-Create folder: /pineapple/modules/ManaToolkit  
-Copy all files to said folder.  
+TETRA:
+Create a folder: /pineapple/modules/ManaToolkit
+Copy all these files to that folder.
+
+NANO:
+Create a folder: /sd/modules/ManaToolkit
+Copy all these files to that folder.
+You then need to sym-link that folder: ln -s /sd/modules/ManaToolkit /pineapple/modules/ManaToolkit
 Done.   
 
 Disclaimer
