@@ -46,6 +46,9 @@ if [ "$1" = "install" ]; then
   uci set ManaToolkit.run.upstream=wlan1
   uci commit ManaToolkit
 
+  /etc/init.d/stunnel stop
+  /etc/init.d/stunnel disable
+
 elif [ "$1" = "remove" ]; then
     opkg remove hostapd-mana asleap
     rm -rf /etc/config/ManaToolkit
