@@ -99,13 +99,14 @@ class ManaToolkit extends Module
     {
 		if(!$this->checkDependency("hostapd-mana"))
 		{
+			$this->execBackground("chmod +x /pineapple/modules/ManaToolkit/scripts/dependencies.sh");
 			$this->execBackground("/pineapple/modules/ManaToolkit/scripts/dependencies.sh install ".$this->request->destination);
-	        $this->response = array('success' => true);
+		        $this->response = array('success' => true);
 		}
 		else
 		{
-	        $this->execBackground("/pineapple/modules/ManaToolkit/scripts/dependencies.sh remove");
-	        $this->response = array('success' => true);
+		        $this->execBackground("/pineapple/modules/ManaToolkit/scripts/dependencies.sh remove");
+		        $this->response = array('success' => true);
 		}
 	}
 
