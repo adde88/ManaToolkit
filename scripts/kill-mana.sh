@@ -6,6 +6,7 @@ export PATH=$PATH:/sd/usr/bin:/sd/usr/sbin
 
 MYTIME=`date +%d-%m-%Y`
 MYTIME_HR=`date +%H:%M:%S`
+PHY=`uci get ManaToolkit.run.interface`
 
 mana_output_file="/pineapple/modules/ManaToolkit/log/hostapd-mana_output.log"
 
@@ -43,3 +44,6 @@ if [ "$netcreds_pid" != "" ];then
 	kill -9 "$netcreds_pid"
 	mv /pineapple/modules/ManaToolkit/log/Net-Creds/net-creds.log /pineapple/modules/ManaToolkit/log/Net-Creds/${MYTIME}/net-creds_${MYTIME_HR}.log
 fi
+
+ifconfig "$PHY" down
+ifconfig "$PHY" up
