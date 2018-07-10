@@ -285,10 +285,10 @@ class ManaToolkit extends Module
 
     private function getConfiguration()
     {
-		$manaconf = '/sd/etc/mana-toolkit/hostapd-mana.conf';
+		$manaconf = '/mana-toolkit/hostapd-mana.conf';
 		if(file_exists($manaconf))
 		{
-			$config = file_get_contents('/sd/etc/mana-toolkit/hostapd-mana.conf');
+			$config = file_get_contents('/etc/mana-toolkit/hostapd-mana.conf');
 			$this->response = array("ManaToolkitConfiguration" => $config);
 		}
 		else
