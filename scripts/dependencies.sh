@@ -47,7 +47,7 @@ if [ "$1" = "install" ]; then
   uci set ManaToolkit.autostart.interface=wlan1
   uci set ManaToolkit.autostart.upstream=br-lan
   uci set ManaToolkit.run.upstream=br-lan
-  uci set ManaToolkit.run.upstream=wlan1
+  uci set ManaToolkit.run.interface=wlan1
   uci commit ManaToolkit
 
   /etc/init.d/stunnel stop
