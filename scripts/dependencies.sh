@@ -11,13 +11,6 @@ export PATH=$PATH:/sd/usr/bin:/sd/usr/sbin
 touch /tmp/ManaToolkit.progress
 mkdir -p /tmp/ManaToolkit
 
-if [ -d /sd ]; then
-	# sym-linking is only needed on the pineapple NANO.
-	rm -r /usr/lib/python2.7
-	mkdir -p /sd/usr/lib/python2.7
-	ln -s /sd/usr/lib/python2.7 /usr/lib/python2.7
-fi
-
 if [ "$1" = "install" ]; then
   if [ "$2" = "internal" ]; then
     if [ -d /sd ]; then
