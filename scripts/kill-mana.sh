@@ -44,6 +44,9 @@ if [ "$netcreds_pid" != "" ];then
 	kill -9 "$netcreds_pid"
 	mv /pineapple/modules/ManaToolkit/log/Net-Creds/net-creds.log /pineapple/modules/ManaToolkit/log/Net-Creds/${MYTIME}/net-creds_${MYTIME_HR}.log
 fi
-
+# If we don't take the interface down, the SSID from hostapd-mana
+# will continue to broadcast. Even after hostapd-mana has been killed.
+# Not sure yet why.. But taking the interface down and up fixes it.
 ifconfig "$PHY" down
+sleep 2
 ifconfig "$PHY" up
