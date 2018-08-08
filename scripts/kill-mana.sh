@@ -1,5 +1,5 @@
 #!/bin/sh
-#2017 - Zylla / adde88@gmail.com
+#2018 - Zylla / adde88@gmail.com
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/sd/lib:/sd/usr/lib
 export PATH=$PATH:/sd/usr/bin:/sd/usr/sbin
