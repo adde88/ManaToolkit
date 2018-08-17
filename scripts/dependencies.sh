@@ -17,13 +17,13 @@ if [ "$1" = "install" ]; then
       exit 0
     fi
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/asleap_2.2-1_ar71xx.ipk -P /tmp/ManaToolkit
-	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-12_ar71xx.ipk -P /tmp/ManaToolkit
+	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-13_ar71xx.ipk -P /tmp/ManaToolkit
     opkg update
     opkg install /tmp/ManaToolkit/*.ipk sslsplit --force-overwrite
     #opkg install hostapd-mana sslsplit
   elif [ "$2" = "sd" ]; then
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/asleap_2.2-1_ar71xx.ipk -P /tmp/ManaToolkit
-	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-12_ar71xx.ipk -P /tmp/ManaToolkit
+	wget https://github.com/adde88/hostapd-mana-openwrt/raw/master/bin/ar71xx/packages/base/hostapd-mana_2.6-13_ar71xx.ipk -P /tmp/ManaToolkit
     opkg update
     opkg install /tmp/ManaToolkit/*.ipk sslsplit --dest sd --force-overwrite
     #opkg install hostapd-mana sslsplit --dest sd
