@@ -1,4 +1,4 @@
-.#!/bin/sh
+#!/bin/sh
 #2018 - Zylla / adde88@gmail.com
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/sd/lib:/sd/usr/lib
@@ -22,18 +22,18 @@ if [ "$1" = "install" ]; then
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/openwrt-19.07/bin/ar71xx/packages/base/"$ASLEAP" -P /tmp/ManaToolkit
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/openwrt-19.07/bin/ar71xx/packages/base/"$MANA" -P /tmp/ManaToolkit
     opkg update
-    opkg install /tmp/ManaToolkit/*.ipk sslsplit --force-overwrite
-    #opkg install hostapd-mana sslsplit
+    opkg install /tmp/ManaToolkit/*.ipk  --force-overwrite
+    #opkg install hostapd-mana 
   elif [ "$2" = "sd" ]; then
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/openwrt-19.07/bin/ar71xx/packages/base/"$ASLEAP" -P /tmp/ManaToolkit
 	wget https://github.com/adde88/hostapd-mana-openwrt/raw/openwrt-19.07/bin/ar71xx/packages/base/"$MANA" -P /tmp/ManaToolkit
     opkg update
-    opkg install /tmp/ManaToolkit/*.ipk sslsplit --dest sd --force-overwrite
-    #opkg install hostapd-mana sslsplit --dest sd
-    ln -s /sd/etc/mana-toolkit /etc/mana-toolkit
+    opkg install /tmp/ManaToolkit/*.ipk  --dest sd --force-overwrite
+    #opkg install hostapd-mana  --dest sd
+    [ ! -d "/etc/hostapd-mana" ] && ln -s /sd/etc/hostapd-mana /etc/hostapd-mana
   fi
 
-  cp /etc/mana-toolkit/hostapd-mana.conf /etc/mana-toolkit/hostapd-mana.default.conf
+  cp /etc/hostapd-mana/hostapd-mana.conf /etc/hostapd-mana/hostapd-mana.default.conf
   touch /etc/config/ManaToolkit
   echo "config ManaToolkit 'module'" > /etc/config/ManaToolkit
   echo "config ManaToolkit 'run'" >> /etc/config/ManaToolkit
@@ -46,8 +46,9 @@ if [ "$1" = "install" ]; then
   uci set ManaToolkit.run.interface=wlan1
   uci commit ManaToolkit
 
-  /etc/init.d/stunnel stop
-  /etc/init.d/stunnel disable
+#  I'm commenting this stuff out, to minimize dependencies.
+#  /etc/init.d/stunnel stop
+#  /etc/init.d/stunnel disable
 
 elif [ "$1" = "remove" ]; then
     opkg remove hostapd-mana asleap
@@ -56,5 +57,3 @@ fi
 
 rm /tmp/ManaToolkit.progress
 rm -rf /tmp/ManaToolkit
-
-install-mana-depends
